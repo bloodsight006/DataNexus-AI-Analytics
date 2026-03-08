@@ -21,6 +21,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+def health_check():
+    return {"status": "up"}
+
 @app.post("/upload")
 async def process_data(
     file: UploadFile = File(...),
