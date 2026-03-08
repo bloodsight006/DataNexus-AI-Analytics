@@ -40,11 +40,17 @@ async def process_data(
         else:
             raise HTTPException(status_code=400, detail="Only CSV and Excel allowed.")
 
+        # ---  THE RENDER LIFESAVER: MEMORY CAP ---
+        # If the file is massive, we randomly sample 10,000 rows.
+        # This makes the ML models lightning fast and stops RAM crashes.
+        if len(df) > 10000:
+            df = df.sample(10000, random_state=42).reset_index(drop=True)
+
         # --- 0. AI DATA HEALTH PRE-CHECK ---
         total_cells = df.size
         total_rows = len(df)
-        missing_cells = df.isnull().sum().sum()
-        duplicate_rows = df.duplicated().sum()
+        missing_cells = int(df.isnull().sum().sum())
+        duplicate_rows = int(df.duplicated().sum())
         
         # --- 1. ADVANCED DATA CLEANING ---
         df.columns = df.columns.str.strip()
@@ -171,7 +177,8 @@ async def process_data(
                     if pd.notna(val) and abs(val) > 0.6:
                         correlations.append(f"Strong correlation ({round(val, 2)}) between {col1} and {col2}")
 
-        cleaned_csv_string = df.to_csv(index=False)
+        # THE NETWORK LIFESAVER: Cap the CSV payload to 5000 rows max
+        cleaned_csv_string = df.head(5000).to_csv(index=False)
 
         return {
             "filename": file.filename,
@@ -180,9 +187,9 @@ async def process_data(
             "categorical_columns": categorical_cols,
             "stats": summary_stats,
             "trends": trends,
-            "forecasts": forecasts, # NEW
-            "generated_insights": generated_insights, # NEW
-            "tree_insight": tree_insight, # NEW
+            "forecasts": forecasts, 
+            "generated_insights": generated_insights[:5], # Only send top 5 insights to save space
+            "tree_insight": tree_insight, 
             "correlations": correlations if correlations else ["No strong numerical correlations found."],
             "health_score": health_score,
             "clustering_insight": clustering_insight, 
