@@ -21,4 +21,4 @@ DataNexus is a full-stack, AI-powered analytics dashboard that allows users to u
 2. Install Backend Dependencies: `cd backend` -> `pip install -r requirements.txt` -> `uvicorn main:app --reload`
 3. Install Frontend Dependencies: `cd frontend` -> `npm install` -> `npm run dev`
 
-"Note: This project is hosted on a free-tier instance. Please allow ~60 seconds for the initial server wake-up."
+"Note: This project is hosted on a free-tier instance. Please allow ~60 to ~70 seconds for the initial server wake-up."
